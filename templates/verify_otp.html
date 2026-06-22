@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Verify OTP – Tesrora{% endblock %}
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center" style="background:linear-gradient(135deg,#1e1b4b,#4c1d95);padding:2rem 1rem">
+  <div class="card p-4 text-center" style="width:100%;max-width:400px;border-radius:20px;border:none">
+    <div style="width:70px;height:70px;background:#ede9fe;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+      <i class="bi bi-envelope-check" style="font-size:2rem;color:#7c3aed"></i>
+    </div>
+    <h4 class="fw-bold mb-1">OTP Verify Karein</h4>
+    <p class="text-muted small mb-4">6-digit OTP bheja gaya hai: <strong>{{ email }}</strong></p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} py-2 small text-start">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    <form method="POST">
+      <input type="text" name="otp" class="form-control text-center fw-bold mb-3" maxlength="6" placeholder="000000" style="font-size:1.8rem;letter-spacing:0.5rem" required autofocus>
+      <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+        <i class="bi bi-check-circle me-2"></i>Verify Karein
+      </button>
+    </form>
+    <a href="/resend-otp" class="btn btn-link mt-2 small text-muted">OTP nahi mila? Dobara bhejein</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Instructions – {{ test.title }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:650px">
+  <div class="card shadow-sm" style="border-radius:16px;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#1e1b4b,#4c1d95);padding:2rem;color:#fff;text-align:center">
+      <i class="bi bi-file-earmark-text" style="font-size:3rem;opacity:0.8"></i>
+      <h4 class="fw-bold mt-2 mb-1">{{ test.title }}</h4>
+      <span style="opacity:0.7;font-size:0.85rem">Read instructions carefully before starting</span>
+    </div>
+    <div class="card-body p-4">
+      <div class="row g-3 mb-4 text-center">
+        <div class="col-4">
+          <div style="background:#ede9fe;border-radius:10px;padding:1rem">
+            <div class="fw-bold" style="color:#7c3aed;font-size:1.3rem">{{ test.duration }}</div>
+            <div class="small text-muted">Minutes</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div style="background:#d1fae5;border-radius:10px;padding:1rem">
+            <div class="fw-bold" style="color:#059669;font-size:1.3rem">{{ q_count }}</div>
+            <div class="small text-muted">Questions</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div style="background:#fee2e2;border-radius:10px;padding:1rem">
+            <div class="fw-bold" style="color:#dc2626;font-size:1.3rem">{{ test.total_marks }}</div>
+            <div class="small text-muted">Total Marks</div>
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-info mb-3">
+        <div class="fw-semibold mb-1"><i class="bi bi-info-circle me-1"></i>Marking Scheme</div>
+        <div class="small">✅ Correct Answer: <strong>+{{ test.correct_marks }}</strong> marks &nbsp;&nbsp; ❌ Wrong Answer: <strong>-{{ test.neg_marks }}</strong> marks &nbsp;&nbsp; ⏭ Skipped: <strong>0</strong> marks</div>
+      </div>
+      {% if test.instructions %}
+      <div class="mb-3">
+        <div class="fw-semibold mb-2"><i class="bi bi-list-ul me-1"></i>Instructions</div>
+        <div class="small text-muted" style="line-height:1.8">{{ test.instructions }}</div>
+      </div>
+      {% endif %}
+      <div class="alert alert-warning small">
+        <i class="bi bi-shield-exclamation me-1"></i>
+        <strong>Anti-Cheat:</strong> Tab switching & fullscreen exit detected. Test auto-submits on 3 violations.
+      </div>
+      <div class="d-flex gap-3 mt-4">
+        <a href="/tests" class="btn btn-outline-secondary flex-fill">Cancel</a>
+        <a href="/test/{{ test.id }}/start" class="btn btn-primary flex-fill fw-bold">
+          <i class="bi bi-play-fill me-1"></i>Start Test Now
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

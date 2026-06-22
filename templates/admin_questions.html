@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Questions – {{ test.title }}{% endblock %}
+{% block content %}
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-section">Admin Panel</div>
+  <a href="/admin" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/subjects" class="sidebar-link"><i class="bi bi-bookmarks"></i> Subjects</a>
+  <a href="/admin/tests" class="sidebar-link active"><i class="bi bi-collection-play"></i> Tests</a>
+  <a href="/admin/results" class="sidebar-link"><i class="bi bi-bar-chart"></i> Results</a>
+  <div class="sidebar-section">Account</div>
+  <a href="/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+
+<div class="main-content">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <a href="/admin/tests" class="btn btn-sm btn-outline-secondary mb-2"><i class="bi bi-arrow-left me-1"></i>Back</a>
+      <h4 class="fw-bold mb-0">Questions</h4>
+      <div class="text-muted small">{{ test.title }} &nbsp;|&nbsp; {{ questions|length }} Questions</div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- ADD QUESTION FORM -->
+    <div class="col-lg-5">
+      <div class="card p-3 mb-3">
+        <div class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2" style="color:#7c3aed"></i>Add Question</div>
+        <form method="POST">
+          <input type="hidden" name="action" value="add">
+          <div class="mb-2">
+            <label class="form-label">Question Text *</label>
+            <textarea name="text" class="form-control" rows="3" placeholder="Question yahan likhein..." required></textarea>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label">Option A *</label>
+              <input type="text" name="option_a" class="form-control" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Option B *</label>
+              <input type="text" name="option_b" class="form-control" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Option C *</label>
+              <input type="text" name="option_c" class="form-control" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Option D *</label>
+              <input type="text" name="option_d" class="form-control" required>
+            </div>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label">Correct Answer *</label>
+              <select name="correct" class="form-select" required>
+                <option value="A">A</option><option value="B">B</option>
+                <option value="C">C</option><option value="D">D</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Subject Tag</label>
+              <input type="text" name="subject_tag" class="form-control" placeholder="e.g. Physics">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Explanation (optional)</label>
+            <textarea name="explanation" class="form-control" rows="2" placeholder="Answer ki explanation..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i>Add Question
+          </button>
+        </form>
+      </div>
+
+      <!-- BULK UPLOAD -->
+      <div class="card p-3">
+        <div class="fw-semibold mb-2"><i class="bi bi-file-earmark-excel me-2" style="color:#10b981"></i>Bulk Excel Upload</div>
+        <div class="alert alert-info small py-2">
+          Excel format: <strong>Question | A | B | C | D | Correct | Explanation</strong>
+        </div>
+        <a href="#" class="btn btn-sm btn-outline-success mb-3 w-100" onclick="downloadTemplate()">
+          <i class="bi bi-download me-1"></i>Sample Excel Download
+        </a>
+        <form method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="bulk">
+          <input type="file" name="excel_file" class="form-control mb-2" accept=".xlsx,.xls" required>
+          <button type="submit" class="btn btn-success w-100 fw-semibold">
+            <i class="bi bi-upload me-1"></i>Upload & Import
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- QUESTION LIST -->
+    <div class="col-lg-7">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+      <div class="card">
+        <div class="card-header"><i class="bi bi-list-check me-2" style="color:#7c3aed"></i>All Questions ({{ questions|length }})</div>
+        {% if questions %}
+        <div class="list-group list-group-flush" style="max-height:700px;overflow-y:auto">
+          {% for q in questions %}
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div class="flex-grow-1">
+                <div class="d-flex gap-2 align-items-center mb-1">
+                  <span class="badge" style="background:#ede9fe;color:#7c3aed;font-size:0.7rem">Q{{ loop.index }}</span>
+                  {% if q.subject_tag %}<span class="badge bg-light text-dark" style="font-size:0.7rem">{{ q.subject_tag }}</span>{% endif %}
+                </div>
+                <div class="small fw-semibold mb-1">{{ q.text[:100] }}{% if q.text|length > 100 %}…{% endif %}</div>
+                <div class="d-flex gap-2 flex-wrap" style="font-size:0.75rem">
+                  <span class="{% if q.correct=='A' %}text-success fw-bold{% else %}text-muted{% endif %}">A: {{ q.option_a[:20] }}</span>
+                  <span class="{% if q.correct=='B' %}text-success fw-bold{% else %}text-muted{% endif %}">B: {{ q.option_b[:20] }}</span>
+                  <span class="{% if q.correct=='C' %}text-success fw-bold{% else %}text-muted{% endif %}">C: {{ q.option_c[:20] }}</span>
+                  <span class="{% if q.correct=='D' %}text-success fw-bold{% else %}text-muted{% endif %}">D: {{ q.option_d[:20] }}</span>
+                </div>
+                {% if q.explanation %}
+                <div class="text-muted mt-1" style="font-size:0.72rem"><i class="bi bi-lightbulb me-1 text-warning"></i>{{ q.explanation[:60] }}…</div>
+                {% endif %}
+              </div>
+              <a href="/admin/questions/{{ q.id }}/delete" onclick="return confirm('Delete this question?')" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i>
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-question-circle d-block"></i>Koi question nahi hai.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function downloadTemplate() {
+  const header = 'Question,Option A,Option B,Option C,Option D,Correct Answer,Explanation\n';
+  const sample = 'Sample question text?,Option 1,Option 2,Option 3,Option 4,A,This is the explanation\n';
+  const blob = new Blob([header + sample], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tesrora_questions_template.csv';
+  a.click();
+}
+</script>
+{% endblock %}

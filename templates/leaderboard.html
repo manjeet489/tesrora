@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Leaderboard – {{ test.title }}{% endblock %}
+{% block content %}
+<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);padding:2rem 0;color:#fff">
+  <div class="container">
+    <a href="/tests" class="btn btn-sm btn-outline-light mb-3"><i class="bi bi-arrow-left me-1"></i>Back</a>
+    <h3 class="fw-bold"><i class="bi bi-trophy-fill me-2" style="color:#fbbf24"></i>Leaderboard</h3>
+    <p style="opacity:0.75">{{ test.title }}</p>
+  </div>
+</div>
+<div class="container py-4">
+  {% if results %}
+  <!-- TOP 3 -->
+  <div class="row g-3 mb-4 justify-content-center">
+    {% for i, pos, col, size in [(1,0,'#fbbf24',80),(0,1,'#94a3b8',65),(2,2,'#f97316',60)] %}
+    {% if results|length > pos %}
+    {% set r = results[pos] %}
+    {% set u = users.get(r.user_id) %}
+    <div class="col-md-4 text-center">
+      <div class="card p-3 {% if pos==0 %}border-warning shadow-lg{% endif %}">
+        <div style="font-size:{{ size }}px;margin-bottom:0.5rem">{% if pos==0 %}🥇{% elif pos==1 %}🥈{% else %}🥉{% endif %}</div>
+        <div class="fw-bold">{{ u.name if u else 'Unknown' }}</div>
+        <div class="text-muted small">{{ u.email[:20] if u else '' }}…</div>
+        <div class="fw-bold mt-2" style="font-size:1.4rem;color:{{ col }}">{{ r.score|int }}</div>
+        <div class="small text-muted">Accuracy: {{ r.accuracy }}%</div>
+        {% if u and u.id == current_user_id %}<span class="badge bg-primary mt-1">You</span>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- FULL TABLE -->
+  <div class="card">
+    <div class="card-header"><i class="bi bi-list-ol me-2" style="color:#7c3aed"></i>Full Rankings</div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr><th>Rank</th><th>Student</th><th>Score</th><th>Accuracy</th><th>Correct</th><th>Wrong</th><th>Time</th></tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+          {% set u = users.get(r.user_id) %}
+          <tr {% if u and u.id == current_user_id %}class="table-primary"{% endif %}>
+            <td><span class="fw-bold">{% if loop.index==1 %}🥇{% elif loop.index==2 %}🥈{% elif loop.index==3 %}🥉{% else %}#{{ loop.index }}{% endif %}</span></td>
+            <td>
+              <div class="fw-semibold">{{ u.name if u else 'Unknown' }}</div>
+              {% if u and u.id == current_user_id %}<span class="badge bg-primary" style="font-size:0.65rem">You</span>{% endif %}
+            </td>
+            <td class="fw-bold text-primary">{{ r.score|int }}</td>
+            <td>
+              <div class="progress" style="height:8px;width:80px">
+                <div class="progress-bar {% if r.accuracy>=70 %}bg-success{% elif r.accuracy>=40 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ r.accuracy }}%"></div>
+              </div>
+              <div class="small text-muted">{{ r.accuracy }}%</div>
+            </td>
+            <td class="text-success">{{ r.correct }}</td>
+            <td class="text-danger">{{ r.wrong }}</td>
+            <td class="text-muted small">{{ (r.time_taken//60) }}m {{ r.time_taken%60 }}s</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="bi bi-trophy d-block"></i>Abhi koi results nahi hain.</div>
+  {% endif %}
+</div>
+{% endblock %}

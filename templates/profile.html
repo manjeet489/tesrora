@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Profile – Tesrora{% endblock %}
+{% block content %}
+<div class="sidebar" id="sidebar">
+  <a href="/dashboard" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/tests" class="sidebar-link"><i class="bi bi-collection-play"></i> All Tests</a>
+  <a href="/profile" class="sidebar-link active"><i class="bi bi-person-circle"></i> Profile</a>
+  <a href="/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+<div class="main-content">
+  <div class="page-title"><i class="bi bi-person-circle me-2" style="color:#7c3aed"></i>My Profile</div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}<div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card p-4 text-center mb-3">
+        <div style="width:80px;height:80px;background:linear-gradient(135deg,#7c3aed,#0ea5e9);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2rem;color:#fff;font-weight:700">
+          {{ user.name[0].upper() }}
+        </div>
+        <h5 class="fw-bold mb-1">{{ user.name }}</h5>
+        <div class="text-muted small mb-2">{{ user.email }}</div>
+        {% if user.subscription=='pro' %}<span class="badge-pro">PRO Member</span>
+        {% elif user.subscription=='premium' %}<span class="badge-pro">PREMIUM Member</span>
+        {% else %}
+        <span class="badge-free">Free Plan</span>
+        <button class="btn btn-primary btn-sm mt-2 d-block w-100" data-bs-toggle="modal" data-bs-target="#subModal">
+          <i class="bi bi-star me-1"></i>Upgrade to Pro
+        </button>
+        {% endif %}
+      </div>
+      <div class="card p-3">
+        <div class="fw-semibold mb-3">Edit Profile</div>
+        <form method="POST" action="/profile/update">
+          <div class="mb-2">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="tel" name="phone" class="form-control" value="{{ user.phone or '' }}" placeholder="9876543210">
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-semibold">Update Profile</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <!-- STATS -->
+      <div class="row g-3 mb-4">
+        <div class="col-4"><div class="card p-3 text-center"><div class="fw-bold" style="font-size:1.5rem;color:#7c3aed">{{ results|length }}</div><div class="small text-muted">Tests Diye</div></div></div>
+        <div class="col-4">
+          {% set avg = (results | map(attribute='score') | list | sum / results|length) if results else 0 %}
+          <div class="card p-3 text-center"><div class="fw-bold" style="font-size:1.5rem;color:#0ea5e9">{{ avg|int }}</div><div class="small text-muted">Avg Score</div></div>
+        </div>
+        <div class="col-4">
+          {% set best = results | map(attribute='air_rank') | list | min if results else 0 %}
+          <div class="card p-3 text-center"><div class="fw-bold" style="font-size:1.5rem;color:#10b981">{% if best %}AIR {{ best }}{% else %}N/A{% endif %}</div><div class="small text-muted">Best Rank</div></div>
+        </div>
+      </div>
+      <!-- HISTORY -->
+      <div class="card">
+        <div class="card-header"><i class="bi bi-clock-history me-2" style="color:#7c3aed"></i>Test History</div>
+        {% if results %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th>Test</th><th>Score</th><th>Accuracy</th><th>AIR</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+              {% for r in results %}
+              <tr>
+                <td class="small fw-semibold">Test #{{ r.test_id }}</td>
+                <td class="fw-bold text-primary">{{ r.score|int }}</td>
+                <td><span class="badge {% if r.accuracy>=70 %}bg-success{% elif r.accuracy>=40 %}bg-warning{% else %}bg-danger{% endif %}">{{ r.accuracy }}%</span></td>
+                <td class="fw-bold">#{{ r.air_rank }}</td>
+                <td class="small text-muted">{{ r.submitted_at.strftime('%d %b %Y') }}</td>
+                <td><a href="/result/{{ r.id }}" class="btn btn-sm btn-outline-primary">View</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-clipboard-x d-block"></i>Abhi koi test nahi diya.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

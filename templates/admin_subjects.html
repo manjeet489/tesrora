@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Subjects – Tesrora{% endblock %}
+{% block content %}
+<div class="sidebar" id="sidebar">
+  <a href="/admin" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/subjects" class="sidebar-link active"><i class="bi bi-bookmarks"></i> Subjects</a>
+  <a href="/admin/tests" class="sidebar-link"><i class="bi bi-collection-play"></i> Tests</a>
+  <a href="/admin/results" class="sidebar-link"><i class="bi bi-bar-chart"></i> Results</a>
+  <a href="/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+<div class="main-content">
+  <div class="page-title"><i class="bi bi-bookmarks me-2" style="color:#7c3aed"></i>Manage Subjects</div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}<div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card p-3">
+        <div class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2" style="color:#7c3aed"></i>Add Subject</div>
+        <form method="POST">
+          <div class="mb-2">
+            <label class="form-label">Subject Name *</label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Physics" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Bootstrap Icon Name</label>
+            <input type="text" name="icon" class="form-control" placeholder="e.g. atom, flask, calculator" value="book">
+            <div class="form-text">See icons.getbootstrap.com</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <input type="text" name="description" class="form-control" placeholder="Short description">
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-semibold">Add Subject</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="row g-3">
+        {% for s in subjects %}
+        <div class="col-sm-6">
+          <div class="card p-3 d-flex flex-row align-items-center gap-3">
+            <div style="width:46px;height:46px;background:#ede9fe;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="bi bi-{{ s.icon }}" style="font-size:1.3rem;color:#7c3aed"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ s.name }}</div>
+              {% if s.description %}<div class="text-muted small">{{ s.description }}</div>{% endif %}
+            </div>
+            <a href="/admin/subjects/{{ s.id }}/delete" onclick="return confirm('Delete subject?')" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+          </div>
+        </div>
+        {% else %}
+        <div class="col-12 empty-state"><i class="bi bi-bookmarks d-block"></i>Koi subject nahi.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

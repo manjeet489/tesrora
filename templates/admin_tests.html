@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Manage Tests – Tesrora{% endblock %}
+{% block content %}
+<div class="sidebar" id="sidebar">
+  <a href="/admin" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/subjects" class="sidebar-link"><i class="bi bi-bookmarks"></i> Subjects</a>
+  <a href="/admin/tests" class="sidebar-link active"><i class="bi bi-collection-play"></i> Tests</a>
+  <a href="/admin/results" class="sidebar-link"><i class="bi bi-bar-chart"></i> Results</a>
+  <a href="/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+<div class="main-content">
+  <div class="page-title"><i class="bi bi-collection-play me-2" style="color:#7c3aed"></i>Manage Tests</div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}<div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card p-3">
+        <div class="fw-semibold mb-3"><i class="bi bi-plus-circle me-2" style="color:#7c3aed"></i>Create New Test</div>
+        <form method="POST">
+          <div class="mb-2">
+            <label class="form-label">Test Title *</label>
+            <input type="text" name="title" class="form-control" placeholder="JEE Main Mock Test 1" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Subject</label>
+            <select name="subject_id" class="form-select">
+              <option value="">-- Select --</option>
+              {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label">Duration (min)</label>
+              <input type="number" name="duration" class="form-control" value="60" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Total Marks</label>
+              <input type="number" name="total_marks" class="form-control" value="100" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Correct (+)</label>
+              <input type="number" name="correct_marks" class="form-control" value="4" step="0.5" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Negative (-)</label>
+              <input type="number" name="neg_marks" class="form-control" value="1" step="0.5" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Instructions</label>
+            <textarea name="instructions" class="form-control" rows="2" placeholder="Exam instructions..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-semibold">
+            <i class="bi bi-plus me-1"></i>Create Test
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-list me-2"></i>All Tests ({{ tests|length }})</div>
+        {% if tests %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th>Title</th><th>Marking</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              {% for t in tests %}
+              <tr>
+                <td>
+                  <div class="fw-semibold small">{{ t.title }}</div>
+                  <div class="text-muted" style="font-size:0.72rem">by {{ users.get(t.created_by).name if users.get(t.created_by) else 'Admin' }}</div>
+                </td>
+                <td class="small"><span class="text-success">+{{ t.correct_marks }}</span> / <span class="text-danger">-{{ t.neg_marks }}</span></td>
+                <td class="small">{{ t.duration }} min<br><span class="text-muted">{{ t.total_marks }} marks</span></td>
+                <td>
+                  {% if t.is_active %}<span class="badge bg-success">Active</span>
+                  {% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+                </td>
+                <td>
+                  <div class="d-flex gap-1 flex-wrap">
+                    <a href="/admin/questions/{{ t.id }}" class="btn btn-primary btn-sm">
+                      <i class="bi bi-question-circle"></i> Questions
+                    </a>
+                    <a href="/admin/tests/{{ t.id }}/toggle" class="btn btn-sm {% if t.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                      <i class="bi bi-{% if t.is_active %}pause{% else %}play{% endif %}"></i>
+                    </a>
+                    <a href="/admin/tests/{{ t.id }}/delete" onclick="return confirm('Delete test and all questions?')" class="btn btn-danger btn-sm">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-collection-play d-block"></i>Koi test nahi hai.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

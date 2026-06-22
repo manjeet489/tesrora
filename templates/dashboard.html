@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard – Tesrora{% endblock %}
+{% block content %}
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-section">Main</div>
+  <a href="/dashboard" class="sidebar-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/tests" class="sidebar-link"><i class="bi bi-collection-play"></i> All Tests</a>
+  <a href="/profile" class="sidebar-link"><i class="bi bi-person-circle"></i> Profile</a>
+  <div class="sidebar-section">Quick Links</div>
+  <a href="/tests?subject=1" class="sidebar-link"><i class="bi bi-atom"></i> Physics</a>
+  <a href="/tests?subject=2" class="sidebar-link"><i class="bi bi-flask"></i> Chemistry</a>
+  <a href="/tests?subject=3" class="sidebar-link"><i class="bi bi-calculator"></i> Mathematics</a>
+  <div class="sidebar-section">Account</div>
+  <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#subModal"><i class="bi bi-star"></i> Upgrade Plan</a>
+  <a href="/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+
+<div class="main-content">
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-0">Namaste, {{ user.name }} 👋</h4>
+      <div class="text-muted small">
+        {% if user.subscription == 'pro' %}<span class="badge-pro me-2">PRO</span>
+        {% elif user.subscription == 'premium' %}<span class="badge-pro me-2">PREMIUM</span>
+        {% else %}<span class="badge-free me-2">FREE</span>{% endif %}
+        {{ user.email }}
+      </div>
+    </div>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#subModal">
+      <i class="bi bi-star me-1"></i>Upgrade to Pro
+    </button>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card position-relative" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
+        <i class="bi bi-clipboard-check stat-icon"></i>
+        <div class="stat-val">{{ total_tests }}</div>
+        <div class="stat-lbl">Tests Diye</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card position-relative" style="background:linear-gradient(135deg,#0ea5e9,#38bdf8)">
+        <i class="bi bi-bar-chart stat-icon"></i>
+        <div class="stat-val">{{ avg_score }}</div>
+        <div class="stat-lbl">Avg Score</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card position-relative" style="background:linear-gradient(135deg,#10b981,#34d399)">
+        <i class="bi bi-trophy stat-icon"></i>
+        <div class="stat-val">{% if best_rank %}AIR {{ best_rank }}{% else %}N/A{% endif %}</div>
+        <div class="stat-lbl">Best Rank</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card position-relative" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">
+        <i class="bi bi-bell stat-icon"></i>
+        <div class="stat-val">{{ notifications }}</div>
+        <div class="stat-lbl">Notifications</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- AVAILABLE TESTS -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-collection-play me-2" style="color:#7c3aed"></i>Available Tests</span>
+          <a href="/tests" class="btn btn-sm btn-outline-primary">Sab dekhein</a>
+        </div>
+        <div class="card-body p-0">
+          {% if tests %}
+          <div class="list-group list-group-flush">
+            {% for t in tests %}
+            <div class="list-group-item d-flex align-items-center gap-3 py-3">
+              <div style="width:42px;height:42px;background:#ede9fe;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="bi bi-file-earmark-text" style="color:#7c3aed"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold small">{{ t.title }}</div>
+                <div class="text-muted" style="font-size:0.75rem">
+                  <i class="bi bi-clock me-1"></i>{{ t.duration }} min &nbsp;
+                  <i class="bi bi-award me-1"></i>{{ t.total_marks }} marks &nbsp;
+                  <span style="color:#10b981">+{{ t.correct_marks }}</span>/<span style="color:#ef4444">-{{ t.neg_marks }}</span>
+                </div>
+              </div>
+              <a href="/test/{{ t.id }}/instructions" class="btn btn-primary btn-sm">Start</a>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state"><i class="bi bi-inbox-fill d-block"></i>Koi test available nahi hai.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- RECENT RESULTS -->
+    <div class="col-lg-4">
+      <div class="card mb-4">
+        <div class="card-header"><i class="bi bi-clock-history me-2" style="color:#7c3aed"></i>Recent Results</div>
+        <div class="card-body p-0">
+          {% if results %}
+          {% for r in results %}
+          <a href="/result/{{ r.id }}" class="d-flex align-items-center gap-2 p-3 text-decoration-none border-bottom" style="color:inherit">
+            <div style="width:38px;height:38px;border-radius:50%;background:{% if r.accuracy >= 70 %}#d1fae5{% elif r.accuracy >= 40 %}#fef3c7{% else %}#fee2e2{% endif %};display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:{% if r.accuracy >= 70 %}#065f46{% elif r.accuracy >= 40 %}#92400e{% else %}#991b1b{% endif %}">
+              {{ r.accuracy|int }}%
+            </div>
+            <div class="flex-grow-1">
+              <div class="small fw-semibold">Score: {{ r.score }}</div>
+              <div class="text-muted" style="font-size:0.72rem">AIR {{ r.air_rank }} • {{ r.submitted_at.strftime('%d %b') }}</div>
+            </div>
+            <i class="bi bi-chevron-right text-muted small"></i>
+          </a>
+          {% endfor %}
+          {% else %}
+          <div class="p-3 text-center text-muted small">Abhi koi result nahi.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- UPGRADE CARD -->
+      {% if user.subscription == 'free' %}
+      <div class="card p-3" style="background:linear-gradient(135deg,#7c3aed,#0ea5e9);border:none">
+        <div class="text-white fw-bold mb-1"><i class="bi bi-star-fill me-2"></i>Pro Upgrade Karein</div>
+        <div class="text-white small mb-3" style="opacity:0.85">Unlimited tests, AIR rank, certificate & AI analysis</div>
+        <button class="btn btn-light btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#subModal" style="color:#7c3aed">
+          Sirf ₹199/month
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

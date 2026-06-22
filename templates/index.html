@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}Tesrora – India's Best Exam Platform{% endblock %}
+{% block extra_css %}
+<style>
+.hero { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%); min-height: 80vh; display: flex; align-items: center; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; color: #fff; line-height: 1.15; }
+.hero p { font-size: 1.1rem; color: rgba(255,255,255,0.75); }
+.hero-badge { background: rgba(167,139,250,0.2); border: 1px solid rgba(167,139,250,0.4); color: #a78bfa; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-block; margin-bottom: 1rem; }
+.stat-strip { background: #fff; padding: 2rem 0; border-top: 3px solid #7c3aed; }
+.stat-item { text-align: center; }
+.stat-item .num { font-size: 2rem; font-weight: 800; color: #7c3aed; }
+.stat-item .lbl { font-size: 0.8rem; color: #64748b; font-weight: 500; }
+.feature-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.5rem; height: 100%; transition: all 0.25s; }
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(124,58,237,0.12); border-color: #7c3aed; }
+.feature-icon { width: 50px; height: 50px; border-radius: 12px; background: #ede9fe; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #7c3aed; margin-bottom: 1rem; }
+.subject-chip { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1e293b; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
+.subject-chip:hover { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+.cta-section { background: linear-gradient(135deg, #7c3aed, #0ea5e9); padding: 4rem 0; }
+</style>
+{% endblock %}
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="container py-5">
+    <div class="row align-items-center gy-5">
+      <div class="col-lg-6">
+        <div class="hero-badge"><i class="bi bi-lightning-charge me-1"></i>India's #1 Exam Prep Platform</div>
+        <h1>Crack <span style="color:#a78bfa">Any Exam</span> with Tesrora</h1>
+        <p class="my-4">JEE, NEET, UPSC, REET, SSC — India ke top exams ke liye mock tests, live rankings aur AI-powered analysis.</p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="/register" class="btn btn-light btn-lg fw-semibold px-4" style="color:#7c3aed">
+            <i class="bi bi-rocket me-2"></i>Free mein Start Karein
+          </a>
+          <a href="/tests" class="btn btn-outline-light btn-lg px-4">
+            <i class="bi bi-collection-play me-2"></i>Tests Dekhein
+          </a>
+        </div>
+        <div class="d-flex gap-4 mt-4">
+          <div class="text-white-50 small"><i class="bi bi-check-circle-fill me-1" style="color:#10b981"></i>Free registration</div>
+          <div class="text-white-50 small"><i class="bi bi-check-circle-fill me-1" style="color:#10b981"></i>+4/-1 marking</div>
+          <div class="text-white-50 small"><i class="bi bi-check-circle-fill me-1" style="color:#10b981"></i>AIR Rank</div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card p-4" style="border-radius:16px;border:2px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);backdrop-filter:blur(10px)">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div style="width:45px;height:45px;background:#7c3aed;border-radius:50%;display:flex;align-items:center;justify-content:center">
+              <i class="bi bi-person-fill text-white fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-semibold text-white">Rahul Sharma</div>
+              <div class="text-white-50 small">JEE Aspirant • AIR 142</div>
+            </div>
+            <div class="ms-auto badge" style="background:#10b981;padding:6px 12px;border-radius:20px;font-size:0.75rem">Score: 276/300</div>
+          </div>
+          <div class="row g-3 text-center">
+            <div class="col-4"><div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:0.75rem"><div class="text-white fw-bold fs-5">92%</div><div class="text-white-50 small">Accuracy</div></div></div>
+            <div class="col-4"><div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:0.75rem"><div class="text-white fw-bold fs-5">AIR 142</div><div class="text-white-50 small">Rank</div></div></div>
+            <div class="col-4"><div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:0.75rem"><div class="text-white fw-bold fs-5">2:45</div><div class="text-white-50 small">Time Left</div></div></div>
+          </div>
+          <div class="mt-3 d-flex gap-2">
+            <a href="/register" class="btn btn-primary flex-fill fw-semibold">Register Free</a>
+            <button class="btn btn-outline-light" onclick="shareWhatsApp('Tesrora par mera score dekho!')"><i class="bi bi-whatsapp"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stat-strip">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="num">50,000+</div><div class="lbl">Students</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="num">10,000+</div><div class="lbl">Questions</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="num">500+</div><div class="lbl">Mock Tests</div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-item"><div class="num">99%</div><div class="lbl">Success Rate</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SUBJECTS -->
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="fw-bold">Subjects</h2>
+      <p class="text-muted">Apna subject chunein aur test dein</p>
+    </div>
+    <div class="row g-3">
+      {% for s in subjects %}
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="/tests?subject={{ s.id }}" class="subject-chip">
+          <i class="bi bi-{{ s.icon }} fs-5" style="color:#7c3aed"></i>
+          <span>{{ s.name }}</span>
+        </a>
+      </div>
+      {% else %}
+      <div class="col-12 text-center text-muted">Koi subject nahi mila. Admin se sampark karein.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="py-5" style="background:#f8fafc">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Kyun Tesrora?</h2>
+      <p class="text-muted">India ke sabse advanced exam platform par aayein</p>
+    </div>
+    <div class="row g-4">
+      {% set features = [
+        ('lightning-charge','+4/-1 Marking','Real exam jaise marking system. Galat answer par negative marking.','#7c3aed'),
+        ('trophy','AIR Rank','All India Rank pata karein. Leaderboard par apna naam dekhein.','#0ea5e9'),
+        ('shield-check','Anti-Cheat','Fullscreen + Tab detection. Cheating bilkul band.','#10b981'),
+        ('clock','Live Timer','Test ke dauraan live countdown timer. Auto-submit on time up.','#f59e0b'),
+        ('file-earmark-bar-graph','Detailed Results','+4/-1 score, accuracy%, question-wise analysis milega.','#ef4444'),
+        ('whatsapp','WhatsApp Share','Result WhatsApp par share karein. Certificate PDF download.','#25d366'),
+        ('person-workspace','Teacher Panel','Teachers khud test banayein aur students ke results dekhein.','#8b5cf6'),
+        ('phone','PWA App','Home screen par add karein — bilkul mobile app jaise.','#06b6d4'),
+      ] %}
+      {% for icon, title, desc, color in features %}
+      <div class="col-sm-6 col-lg-3">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:{{ color }}20;color:{{ color }}"><i class="bi bi-{{ icon }}"></i></div>
+          <h6 class="fw-semibold mb-1">{{ title }}</h6>
+          <p class="text-muted" style="font-size:0.82rem">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section text-center">
+  <div class="container">
+    <h2 class="fw-bold text-white mb-3">Aaj hi shuru karein — bilkul free!</h2>
+    <p class="text-white mb-4" style="opacity:0.85">1 minute mein register karein aur apna pehla mock test dein</p>
+    <a href="/register" class="btn btn-light btn-lg fw-semibold px-5" style="color:#7c3aed">
+      <i class="bi bi-rocket me-2"></i>Register Free
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-dark text-white py-4">
+  <div class="container text-center">
+    <div class="fw-bold mb-1"><i class="bi bi-lightning-charge-fill me-1" style="color:#a78bfa"></i>Tesrora</div>
+    <div class="text-white-50 small">© 2024 Tesrora. India ka #1 Exam Platform.</div>
+  </div>
+</footer>
+{% endblock %}

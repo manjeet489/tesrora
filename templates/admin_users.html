@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Users – Tesrora{% endblock %}
+{% block content %}
+<div class="sidebar" id="sidebar">
+  <a href="/admin" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/admin/users" class="sidebar-link active"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/subjects" class="sidebar-link"><i class="bi bi-bookmarks"></i> Subjects</a>
+  <a href="/admin/tests" class="sidebar-link"><i class="bi bi-collection-play"></i> Tests</a>
+  <a href="/admin/results" class="sidebar-link"><i class="bi bi-bar-chart"></i> Results</a>
+  <a href="/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+<div class="main-content">
+  <div class="page-title"><i class="bi bi-people me-2" style="color:#7c3aed"></i>Manage Users ({{ users|length }})</div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}<div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Plan</th><th>Verified</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="text-muted small">{{ u.id }}</td>
+            <td>
+              <div class="fw-semibold small">{{ u.name }}</div>
+              {% if u.phone %}<div class="text-muted" style="font-size:0.72rem">{{ u.phone }}</div>{% endif %}
+            </td>
+            <td class="small">{{ u.email }}</td>
+            <td>
+              <span class="badge {% if u.role=='superadmin' %}bg-danger{% elif u.role=='admin' %}bg-warning text-dark{% elif u.role=='teacher' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                {{ u.role }}
+              </span>
+            </td>
+            <td>
+              {% if u.subscription=='pro' %}<span class="badge-pro">PRO</span>
+              {% elif u.subscription=='premium' %}<span class="badge-pro">PREMIUM</span>
+              {% else %}<span class="badge-free">FREE</span>{% endif %}
+            </td>
+            <td>
+              {% if u.is_verified %}<i class="bi bi-check-circle-fill text-success"></i>
+              {% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}
+            </td>
+            <td class="small text-muted">{{ u.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div class="d-flex gap-1 flex-wrap">
+                <form method="POST" action="/admin/users/{{ u.id }}/role" class="d-flex gap-1">
+                  <select name="role" class="form-select form-select-sm" style="width:100px">
+                    {% for r in ['student','teacher','admin','superadmin'] %}
+                    <option value="{{ r }}" {% if u.role==r %}selected{% endif %}>{{ r }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-outline-primary">Set</button>
+                </form>
+                <form method="POST" action="/admin/subscription/{{ u.id }}" class="d-flex gap-1">
+                  <select name="plan" class="form-select form-select-sm" style="width:90px">
+                    {% for p in ['free','pro','premium'] %}
+                    <option value="{{ p }}" {% if u.subscription==p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-sm btn-outline-success">Plan</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

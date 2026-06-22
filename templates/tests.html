@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}All Tests – Tesrora{% endblock %}
+{% block content %}
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-section">Navigation</div>
+  <a href="/dashboard" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/tests" class="sidebar-link active"><i class="bi bi-collection-play"></i> All Tests</a>
+  <a href="/profile" class="sidebar-link"><i class="bi bi-person-circle"></i> Profile</a>
+  <div class="sidebar-section">Subjects</div>
+  {% for s in subjects %}
+  <a href="/tests?subject={{ s.id }}" class="sidebar-link {% if selected_subject == s.id %}active{% endif %}">
+    <i class="bi bi-{{ s.icon }}"></i> {{ s.name }}
+  </a>
+  {% endfor %}
+</div>
+<div class="main-content">
+  <div class="page-title"><i class="bi bi-collection-play me-2" style="color:#7c3aed"></i>All Tests</div>
+  <!-- SEARCH -->
+  <form class="mb-4" method="GET">
+    <div class="input-group" style="max-width:500px">
+      <input type="text" name="q" class="form-control" placeholder="Test dhundein..." value="{{ search }}">
+      {% if selected_subject %}<input type="hidden" name="subject" value="{{ selected_subject }}">{% endif %}
+      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
+      {% if search or selected_subject %}<a href="/tests" class="btn btn-outline-secondary">Clear</a>{% endif %}
+    </div>
+  </form>
+  <!-- SUBJECT FILTER -->
+  <div class="d-flex gap-2 flex-wrap mb-4">
+    <a href="/tests" class="btn btn-sm {% if not selected_subject %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+    {% for s in subjects %}
+    <a href="/tests?subject={{ s.id }}" class="btn btn-sm {% if selected_subject == s.id %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ s.name }}</a>
+    {% endfor %}
+  </div>
+  <!-- TESTS GRID -->
+  {% if tests %}
+  <div class="row g-3">
+    {% for t in tests %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="badge" style="background:#ede9fe;color:#7c3aed">{{ t.duration }} min</span>
+            <span class="badge bg-light text-dark">{{ t.total_marks }} marks</span>
+          </div>
+          <h6 class="fw-bold mb-2">{{ t.title }}</h6>
+          <div class="d-flex gap-3 small text-muted mb-3">
+            <span><i class="bi bi-plus-circle-fill text-success me-1"></i>+{{ t.correct_marks }}</span>
+            <span><i class="bi bi-dash-circle-fill text-danger me-1"></i>-{{ t.neg_marks }}</span>
+          </div>
+          {% if t.instructions %}
+          <p class="small text-muted mb-3" style="font-size:0.78rem">{{ t.instructions[:80] }}…</p>
+          {% endif %}
+        </div>
+        <div class="card-footer bg-transparent d-flex gap-2">
+          <a href="/test/{{ t.id }}/instructions" class="btn btn-primary btn-sm flex-fill fw-semibold">
+            <i class="bi bi-play-fill me-1"></i>Start Test
+          </a>
+          <a href="/leaderboard/{{ t.id }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-trophy"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="bi bi-inbox-fill d-block"></i>Koi test nahi mila.<br><a href="/tests">Sab tests dekhein</a></div>
+  {% endif %}
+</div>
+{% endblock %}

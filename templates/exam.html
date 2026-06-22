@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+{% block title %}{{ test.title }} – Tesrora{% endblock %}
+{% block extra_css %}
+<style>
+body { background: #f0f4ff; }
+.exam-header { background: linear-gradient(135deg,#1e1b4b,#312e81); color: #fff; padding: 0.75rem 1.5rem; position: fixed; top: 60px; left: 0; right: 0; z-index: 150; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.timer-box { background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 6px 18px; text-align: center; min-width: 120px; }
+.timer-box .time { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.timer-box .lbl { font-size: 0.65rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; }
+.timer-box.danger { background: rgba(239,68,68,0.3); border-color: #ef4444; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+.exam-body { margin-top: 130px; padding-bottom: 100px; }
+.q-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 1rem; overflow: hidden; transition: box-shadow 0.2s; }
+.q-card.answered { border-left: 4px solid #10b981; }
+.q-card.skipped { border-left: 4px solid #e2e8f0; }
+.q-header { background: #f8fafc; padding: 0.75rem 1.25rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.q-num { font-size: 0.75rem; font-weight: 600; color: #7c3aed; }
+.q-marks { font-size: 0.72rem; color: #64748b; }
+.q-body { padding: 1.25rem; }
+.q-text { font-size: 0.95rem; color: #1e293b; margin-bottom: 1rem; line-height: 1.6; }
+.opt-label { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 9px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.875rem; }
+.opt-label:hover { border-color: #7c3aed; background: #f5f3ff; }
+.opt-label input[type=radio] { display: none; }
+.opt-label.selected { border-color: #7c3aed; background: #ede9fe; font-weight: 500; }
+.opt-badge { width: 28px; height: 28px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; transition: all 0.15s; }
+.opt-label.selected .opt-badge { background: #7c3aed; color: #fff; }
+.q-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px,1fr)); gap: 6px; }
+.pal-btn { width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: #fff; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.pal-btn.answered { background: #10b981; border-color: #10b981; color: #fff; }
+.pal-btn.current { border-color: #7c3aed; color: #7c3aed; }
+.exam-sidebar { position: fixed; right: 1rem; top: 200px; width: 250px; z-index: 100; }
+@media (max-width: 1100px) { .exam-sidebar { display: none !important; } }
+.submit-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; z-index: 150; gap: 1rem; flex-wrap: wrap; }
+.proctoring-badge { font-size: 0.7rem; background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 20px; border: 1px solid #fcd34d; }
+</style>
+{% endblock %}
+{% block content %}
+<!-- EXAM HEADER -->
+<div class="exam-header">
+  <div>
+    <div class="fw-semibold" style="font-size:0.9rem">{{ test.title }}</div>
+    <div style="font-size:0.72rem;opacity:0.7">+{{ test.correct_marks }} Correct &nbsp; -{{ test.neg_marks }} Wrong &nbsp; {{ questions|length }} Questions</div>
+  </div>
+  <div class="d-flex align-items-center gap-3">
+    <span class="proctoring-badge"><i class="bi bi-camera-video me-1"></i>Proctored</span>
+    <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)" onclick="goFullscreen()">
+      <i class="bi bi-fullscreen"></i>
+    </button>
+    <div class="timer-box" id="timerBox">
+      <div class="time" id="timerDisplay">{{ '%02d:%02d'|format(test.duration, 0) }}</div>
+      <div class="lbl">Time Left</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN EXAM BODY -->
+<div class="container exam-body">
+  <div class="row">
+    <div class="col-lg-8">
+      {% for q in questions %}
+      <div class="q-card" id="qcard_{{ loop.index }}" data-qi="{{ loop.index }}">
+        <div class="q-header">
+          <span class="q-num">Question {{ loop.index }} / {{ questions|length }}</span>
+          <span class="q-marks">+{{ test.correct_marks }} / -{{ test.neg_marks }}</span>
+        </div>
+        <div class="q-body">
+          <div class="q-text">{{ q.text }}</div>
+          {% if q.image_url %}
+          <img src="{{ q.image_url }}" class="img-fluid rounded mb-3" style="max-height:200px">
+          {% endif %}
+          {% for opt, letter in [(q.option_a,'A'),(q.option_b,'B'),(q.option_c,'C'),(q.option_d,'D')] %}
+          <label class="opt-label" id="opt_{{ q.id }}_{{ letter }}" onclick="selectOpt({{ q.id }}, '{{ letter }}', this)">
+            <input type="radio" name="q_{{ q.id }}" value="{{ letter }}">
+            <div class="opt-badge">{{ letter }}</div>
+            <span>{{ opt }}</span>
+          </label>
+          {% endfor %}
+          <div class="d-flex gap-2 mt-2">
+            <button class="btn btn-sm btn-outline-danger" onclick="clearOpt({{ q.id }}, {{ loop.index }})">
+              <i class="bi bi-x-circle me-1"></i>Clear
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- SIDEBAR PALETTE -->
+    <div class="col-lg-4">
+      <div class="exam-sidebar">
+        <div class="card p-3">
+          <div class="fw-semibold small mb-2"><i class="bi bi-grid-3x3 me-2" style="color:#7c3aed"></i>Question Palette</div>
+          <div class="d-flex gap-3 small mb-3 text-muted">
+            <span><i class="bi bi-square-fill me-1" style="color:#10b981"></i>Answered</span>
+            <span><i class="bi bi-square me-1" style="color:#e2e8f0"></i>Not Answered</span>
+          </div>
+          <div class="q-palette" id="palette">
+            {% for q in questions %}
+            <button class="pal-btn" id="pal_{{ loop.index }}" onclick="scrollToQ({{ loop.index }})">{{ loop.index }}</button>
+            {% endfor %}
+          </div>
+          <hr>
+          <div class="small text-muted mb-2" id="summaryText">Answered: 0 / {{ questions|length }}</div>
+          <button class="btn btn-success w-100 fw-semibold" onclick="confirmSubmit()">
+            <i class="bi bi-send-check me-2"></i>Submit Test
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT BAR (mobile) -->
+<div class="submit-bar">
+  <div class="small text-muted" id="mobileProgress">0 / {{ questions|length }} answered</div>
+  <button class="btn btn-success fw-semibold px-4" onclick="confirmSubmit()">
+    <i class="bi bi-send-check me-2"></i>Submit Test
+  </button>
+</div>
+
+<!-- ANTI-CHEAT MODAL -->
+<div class="modal fade" id="cheatModal" data-bs-backdrop="static" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger" style="border-radius:14px">
+      <div class="modal-body text-center p-4">
+        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size:3rem"></i>
+        <h5 class="fw-bold mt-3 text-danger">Warning!</h5>
+        <p class="text-muted" id="cheatMsg">Tab switch detected! Agle baar test auto-submit ho sakta hai.</p>
+        <button class="btn btn-danger mt-2" data-bs-dismiss="modal" onclick="goFullscreen()">
+          <i class="bi bi-arrow-counterclockwise me-2"></i>Exam par wapis jao
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL_TIME = {{ test.duration }} * 60;
+const TEST_ID = {{ test.id }};
+const TOTAL_Q = {{ questions|length }};
+let timeLeft = TOTAL_TIME;
+let answers = {};
+let tabWarnings = 0;
+let startTime = Date.now();
+
+// TIMER
+const timerDisplay = document.getElementById('timerDisplay');
+const timerBox = document.getElementById('timerBox');
+const timerInterval = setInterval(() => {
+  timeLeft--;
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  timerDisplay.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (timeLeft <= 300) timerBox.classList.add('danger');
+  if (timeLeft <= 0) { clearInterval(timerInterval); submitTest(true); }
+}, 1000);
+
+// SELECT OPTION
+function selectOpt(qid, letter, el) {
+  document.querySelectorAll(`[id^="opt_${qid}_"]`).forEach(l => l.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[qid] = letter;
+  updatePalette();
+}
+
+function clearOpt(qid, qi) {
+  document.querySelectorAll(`[id^="opt_${qid}_"]`).forEach(l => l.classList.remove('selected'));
+  delete answers[qid];
+  document.getElementById('pal_' + qi)?.classList.remove('answered');
+  updatePalette();
+}
+
+function updatePalette() {
+  const answered = Object.keys(answers).length;
+  document.getElementById('summaryText').textContent = `Answered: ${answered} / ${TOTAL_Q}`;
+  document.getElementById('mobileProgress').textContent = `${answered} / ${TOTAL_Q} answered`;
+  document.querySelectorAll('.q-card').forEach(card => {
+    const qi = parseInt(card.dataset.qi);
+    const pal = document.getElementById('pal_' + qi);
+    const qId = card.querySelector('.opt-label')?.id?.split('_')[1];
+    if (qId && answers[qId]) {
+      card.classList.add('answered');
+      pal?.classList.add('answered');
+    } else {
+      card.classList.remove('answered');
+      pal?.classList.remove('answered');
+    }
+  });
+}
+
+function scrollToQ(qi) {
+  document.getElementById('qcard_' + qi)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ANTI-CHEAT: Tab Switch
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    tabWarnings++;
+    const modal = new bootstrap.Modal(document.getElementById('cheatModal'));
+    document.getElementById('cheatMsg').textContent = tabWarnings >= 3
+      ? 'Warning! Bahut zyada tab switch. Test abhi submit ho raha hai!'
+      : `Tab switch detected! Warning ${tabWarnings}/3. Test submit ho jayega!`;
+    modal.show();
+    if (tabWarnings >= 3) setTimeout(() => submitTest(true), 1500);
+  }
+});
+
+// FULLSCREEN
+function goFullscreen() {
+  document.documentElement.requestFullscreen().catch(() => {});
+}
+document.onfullscreenchange = () => {
+  if (!document.fullscreenElement && TOTAL_TIME - timeLeft > 10) {
+    const modal = new bootstrap.Modal(document.getElementById('cheatModal'));
+    document.getElementById('cheatMsg').textContent = 'Fullscreen mode chhoda! Wapis fullscreen mein jayen.';
+    modal.show();
+  }
+};
+
+// SUBMIT
+function confirmSubmit() {
+  const answered = Object.keys(answers).length;
+  const skipped = TOTAL_Q - answered;
+  if (confirm(`Submit karna chahte hain?\n✅ Answered: ${answered}\n⏭ Skipped: ${skipped}\n\n(Submit ke baad wapis nahi aa sakte)`)) {
+    submitTest(false);
+  }
+}
+
+function submitTest(auto) {
+  clearInterval(timerInterval);
+  if (auto) alert('Time up! Test auto-submit ho raha hai.');
+  const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+  fetch(`/test/${TEST_ID}/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ answers, time_taken: timeTaken })
+  })
+  .then(r => r.json())
+  .then(d => { window.location.href = `/result/${d.result_id}`; })
+  .catch(() => alert('Submit error! Internet check karein.'));
+}
+
+// Start fullscreen automatically
+setTimeout(() => goFullscreen(), 500);
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}All Results – Tesrora{% endblock %}
+{% block content %}
+<div class="sidebar" id="sidebar">
+  <a href="/admin" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/subjects" class="sidebar-link"><i class="bi bi-bookmarks"></i> Subjects</a>
+  <a href="/admin/tests" class="sidebar-link"><i class="bi bi-collection-play"></i> Tests</a>
+  <a href="/admin/results" class="sidebar-link active"><i class="bi bi-bar-chart"></i> Results</a>
+  <a href="/logout" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+<div class="main-content">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-title mb-0"><i class="bi bi-bar-chart me-2" style="color:#7c3aed"></i>All Results ({{ results|length }})</div>
+    <button class="btn btn-outline-success btn-sm" onclick="exportCSV()"><i class="bi bi-download me-1"></i>Export CSV</button>
+  </div>
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" id="resultsTable">
+        <thead><tr><th>#</th><th>Student</th><th>Test</th><th>Score</th><th>Accuracy</th><th>Correct</th><th>Wrong</th><th>AIR</th><th>Time Taken</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for r in results %}
+          {% set u = users.get(r.user_id) %}
+          {% set t = tests.get(r.test_id) %}
+          <tr>
+            <td class="text-muted small">{{ loop.index }}</td>
+            <td><div class="fw-semibold small">{{ u.name if u else 'N/A' }}</div><div class="text-muted" style="font-size:0.7rem">{{ u.email if u else '' }}</div></td>
+            <td class="small">{{ t.title[:30] if t else 'N/A' }}{% if t and t.title|length > 30 %}…{% endif %}</td>
+            <td class="fw-bold text-primary">{{ r.score|int }}</td>
+            <td><span class="badge {% if r.accuracy>=70 %}bg-success{% elif r.accuracy>=40 %}bg-warning{% else %}bg-danger{% endif %}">{{ r.accuracy }}%</span></td>
+            <td class="text-success fw-semibold">{{ r.correct }}</td>
+            <td class="text-danger fw-semibold">{{ r.wrong }}</td>
+            <td class="fw-bold">#{{ r.air_rank }}</td>
+            <td class="small text-muted">{{ (r.time_taken//60) }}m {{ r.time_taken%60 }}s</td>
+            <td class="small text-muted">{{ r.submitted_at.strftime('%d %b, %H:%M') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+function exportCSV() {
+  const rows = [['#','Student','Email','Test','Score','Accuracy','Correct','Wrong','AIR Rank','Date']];
+  document.querySelectorAll('#resultsTable tbody tr').forEach((tr, i) => {
+    const cells = [...tr.querySelectorAll('td')].map(td => '"' + td.innerText.replace(/\n/g,' ').trim() + '"');
+    rows.push(cells);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'tesrora_results.csv';
+  a.click();
+}
+</script>
+{% endblock %}
