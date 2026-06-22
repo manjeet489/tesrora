@@ -124,28 +124,61 @@ def send_otp_email(email, otp, name):
     try:
         smtp_user = os.environ.get('MAIL_USER', '')
         smtp_pass = os.environ.get('MAIL_PASS', '')
-        if not smtp_user:
-            return True  # Skip in dev
+
+        if not smtp_user or not smtp_pass:
+            print(f"\n{'='*40}")
+            print(f"[DEV] OTP for {email}: {otp}")
+            print(f"{'='*40}\n")
+            return True
+
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = f'Tesrora - OTP Verification: {otp}'
-        msg['From'] = smtp_user
-        msg['To'] = email
+        msg['Subject'] = f'Tesrora - Your OTP: {otp}'
+        msg['From']    = smtp_user
+        msg['To']      = email
+
         html = f"""
-        <div style="font-family:Arial;max-width:500px;margin:auto;padding:30px;border:1px solid #eee;border-radius:10px">
-          <h2 style="color:#7c3aed">Tesrora</h2>
-          <p>Hello <b>{name}</b>,</p>
-          <p>Your OTP for email verification:</p>
-          <div style="font-size:36px;font-weight:bold;color:#7c3aed;letter-spacing:10px;text-align:center;padding:20px">{otp}</div>
-          <p style="color:#888">Valid for 10 minutes. Do not share with anyone.</p>
+        <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:30px;
+                    background:#f8f9fa;border-radius:12px">
+          <div style="text-align:center;margin-bottom:24px">
+            <h2 style="color:#7c3aed;margin:0">&#9889; Tesrora</h2>
+            <p style="color:#666;margin:4px 0">India's #1 Exam Platform</p>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:24px;border:1px solid #e2e8f0">
+            <p style="color:#333">Hello <b>{name}</b>,</p>
+            <p style="color:#555;margin-bottom:20px">Aapka email verification OTP:</p>
+            <div style="text-align:center;background:#ede9fe;border-radius:10px;padding:20px;margin-bottom:20px">
+              <div style="font-size:40px;font-weight:800;color:#7c3aed;letter-spacing:12px">{otp}</div>
+              <p style="color:#7c3aed;font-size:12px;margin:8px 0 0">Valid for 10 minutes only</p>
+            </div>
+            <p style="color:#888;font-size:13px">
+              &#9888; Yeh OTP kisi se share na karein.<br>
+              Agar aapne register nahi kiya to ignore karein.
+            </p>
+          </div>
+          <p style="text-align:center;color:#aaa;font-size:12px;margin-top:16px">
+            &copy; 2024 Tesrora
+          </p>
         </div>"""
+
         msg.attach(MIMEText(html, 'html'))
+
         server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.ehlo()
         server.starttls()
+        server.ehlo()
         server.login(smtp_user, smtp_pass)
         server.sendmail(smtp_user, email, msg.as_string())
         server.quit()
+        print(f"[EMAIL] OTP sent to {email}")
         return True
-    except:
+
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"[EMAIL ERROR] Auth failed: {e}")
+        print(f"[FALLBACK] OTP for {email}: {otp}")
+        return False
+    except Exception as e:
+        print(f"[EMAIL ERROR] {e}")
+        print(f"[FALLBACK] OTP for {email}: {otp}")
         return False
 
 def generate_otp():
