@@ -179,23 +179,21 @@ def register():
         if User.query.filter_by(email=email).first():
             flash('Email already registered!', 'danger')
             return redirect(url_for('register'))
-        otp = generate_otp()
-        user = User(
-            name=name, email=email,
-            password=generate_password_hash(pwd),
-            phone=phone, otp=otp,
-            otp_expiry=datetime.utcnow() + timedelta(minutes=10)
-        )
-        db.session.add(user)
-        db.session.commit()
-        send_otp_email(email, otp, name)
-        session['verify_email'] = email
-        flash(f'OTP sent to {email}. Check inbox!', 'info')
-        return redirect(url_for('verify_otp'))
+    user = User(
+    name=name,
+    email=email,
+    password=generate_password_hash(pwd),
+    phone=phone,
+    is_verified=True
+)
+
+db.session.add(user)
+db.session.commit()
+
+flash('Registration successful! Please login.', 'success')
+return redirect(url_for('login'))
     return render_template('register.html')
 
-@app.route('/verify-otp', methods=['GET','POST'])
-def verify_otp():
     email = session.get('verify_email')
     if not email:
         return redirect(url_for('register'))
@@ -212,8 +210,6 @@ def verify_otp():
         flash('Invalid or expired OTP!', 'danger')
     return render_template('verify_otp.html', email=email)
 
-@app.route('/resend-otp')
-def resend_otp():
     email = session.get('verify_email')
     if email:
         user = User.query.filter_by(email=email).first()
@@ -233,10 +229,6 @@ def login():
         pwd   = request.form['password']
         user  = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, pwd):
-            if not user.is_verified:
-                session['verify_email'] = email
-                flash('Please verify your email first!', 'warning')
-                return redirect(url_for('verify_otp'))
             session['user_id']   = user.id
             session['user_name'] = user.name
             session['user_role'] = user.role
